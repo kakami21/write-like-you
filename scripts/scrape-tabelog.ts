@@ -4,7 +4,10 @@ import { RefreshReviews } from "../src/scraping/refresh-reviews";
 import { TabelogReviewScraper } from "../src/scraping/tabelog-review-scraper";
 
 const refreshReviews = new RefreshReviews(
-  new TabelogReviewScraper(new LocalBrowserProvider()),
+  new TabelogReviewScraper(
+    new LocalBrowserProvider(),
+    process.env.TABELOG_USERNAME ?? "",
+  ),
   new JsonReviewRepository(),
 );
 

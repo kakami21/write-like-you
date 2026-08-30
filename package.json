@@ -32,6 +32,6 @@
     "types": "wrangler types --env-interface CloudflareBindings --strict-vars false",
     "types:check": "wrangler types --env-interface CloudflareBindings --strict-vars false --check",
     "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json && tsc -p tsconfig.worker.json",
-    "scrape": "tsx scripts/scrape-tabelog.ts"
+    "scrape": "tsx --env-file=.dev.vars scripts/scrape-tabelog.ts"
   }
 }

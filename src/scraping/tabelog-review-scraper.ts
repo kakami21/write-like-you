@@ -5,7 +5,6 @@ import type {
 } from "./browser-provider";
 import type { Review } from "./review";
 
-const START_URL = "https://tabelog.com/rvwr/wi2kty/reviewed_restaurants/list";
 const WAIT_MS = 1_000;
 
 type ReviewLink = Pick<Review, "id" | "name" | "url" | "detailUrl">;
@@ -49,9 +48,9 @@ async function optionalText(locator: ScrapingLocator) {
   return (await locator.count()) > 0 ? normalize(await locator.innerText()) : null;
 }
 
-async function collectReviewLinks(page: ScrapingPage) {
+async function collectReviewLinks(page: ScrapingPage, startUrl: string) {
   const reviews = new Map<string, ReviewLink>();
-  let url: string | null = START_URL;
+  let url: string | null = startUrl;
 
   while (url) {
     await openPage(page, url, "一覧ページ");
@@ -125,7 +124,18 @@ async function scrapeReview(page: ScrapingPage, link: ReviewLink) {
 }
 
 export class TabelogReviewScraper {
-  constructor(private readonly browserProvider: BrowserProvider) {}
+  private readonly startUrl: string;
+
+  constructor(
+    private readonly browserProvider: BrowserProvider,
+    tabelogUsername: string,
+  ) {
+    if (!tabelogUsername) {
+      throw new Error("TABELOG_USERNAMEを設定してください。");
+    }
+
+    this.startUrl = `https://tabelog.com/rvwr/${encodeURIComponent(tabelogUsername)}/reviewed_restaurants/list`;
+  }
 
   async scrape() {
     const browser = await this.browserProvider.open();
@@ -133,6 +143,7 @@ export class TabelogReviewScraper {
     try {
       const links = await collectReviewLinks(
         await browser.newPage({ locale: "ja-JP" }),
+        this.startUrl,
       );
       const detailPage = await browser.newPage({ locale: "ja-JP" });
       const reviews: Review[] = [];

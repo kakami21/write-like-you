@@ -5,7 +5,10 @@ import { D1ReviewRepository } from "./d1-review-repository";
 
 export function createRefreshReviews(env: CloudflareBindings) {
   return new RefreshReviews(
-    new TabelogReviewScraper(new CloudflareBrowserProvider(env.BROWSER)),
+    new TabelogReviewScraper(
+      new CloudflareBrowserProvider(env.BROWSER),
+      env.TABELOG_USERNAME,
+    ),
     new D1ReviewRepository(env.DB),
   );
 }

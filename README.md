@@ -64,11 +64,12 @@ npm install
 ```text
 AI_TRANSPORT="rest"
 REVIEW_SOURCE="json"
+TABELOG_USERNAME="食べログのユーザー名"
 CLOUDFLARE_ACCOUNT_ID="CloudflareのAccount ID"
 CLOUDFLARE_AI_API_TOKEN="Workers AI API Token"
 ```
 
-本番では`wrangler.jsonc`の`REVIEW_SOURCE="d1"`が使用されます。
+`TABELOG_USERNAME`には、口コミを取得する食べログユーザーのURL上の名前を設定します。本番では`wrangler.jsonc`の`TABELOG_USERNAME`と`REVIEW_SOURCE="d1"`が使用されます。
 
 Browser Runは`wrangler.jsonc`でリモートバインディングとして設定されています。ローカルからBrowser Runを実行した場合もCloudflare側の利用量に加算されます。
 
