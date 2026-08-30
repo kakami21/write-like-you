@@ -5,7 +5,7 @@ import type {
 } from "./browser-provider";
 import type { Review } from "./review";
 
-const WAIT_MS = 1_000;
+const WAIT_MS = 2_000;
 
 type ReviewLink = Pick<Review, "id" | "name" | "url" | "detailUrl">;
 
