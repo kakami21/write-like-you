@@ -64,9 +64,9 @@ export function ReviewListPage() {
   );
 
   return (
-    <main className="min-h-screen bg-base-200 px-4 py-10" data-theme="cupcake">
+    <main className="brutal min-h-screen bg-amber-50 px-4 py-10">
       <div className="mx-auto max-w-3xl">
-        <header className="mb-8 flex items-start justify-between gap-4">
+        <header className="mb-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-4xl font-bold">口コミ一覧</h1>
             <p className="mt-2 opacity-70">{sortedReviews.length}件の口コミ</p>
@@ -86,7 +86,7 @@ export function ReviewListPage() {
           </Link>
         </header>
 
-        <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="mb-4 flex items-center justify-end gap-4">
           <p className="text-sm font-bold">並び順</p>
           <div
             className="join grid w-56 grid-cols-2"

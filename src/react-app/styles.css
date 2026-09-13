@@ -1,2 +1,19 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+.brutal .btn-primary,
+.brutal .badge-primary { background: #fb923c; color: #1c1917; }
+.brutal .badge-primary { border: 2px solid #1c1917; }
+
+.brutal .btn,
+.brutal .card,
+.brutal .input,
+.brutal .textarea { border: 2px solid #1c1917; }
+
+.brutal .btn,
+.brutal .card { box-shadow: 4px 4px 0 #1c1917; }
+
+.brutal .join .btn { box-shadow: none; }
+
+.brutal .btn:active { translate: 4px 4px; box-shadow: none; }
+.brutal .join .btn:active { translate: none; }

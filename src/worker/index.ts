@@ -21,7 +21,6 @@ app.all("/api/generate", (c) => {
 // ヘルスチェックAPI
 app.get("/api/health", async (c) => {
   const styleSamples = await getReviewSource(c.env).getStyleSamples();
-
   return c.json({ status: "ok", writingSamples: styleSamples.length });
 });
 

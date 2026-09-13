@@ -46,10 +46,10 @@ export function ReviewCreatePage() {
   }
 
   return (
-    <main className="min-h-screen bg-base-200 px-4 py-10" data-theme="cupcake">
+    <main className="brutal min-h-screen bg-amber-50 px-4 py-10">
       <div className="mx-auto max-w-3xl">
         <header className="mb-8">
-          <p className="text-sm font-bold tracking-widest text-primary">PERSONAL REVIEW WRITER</p>
+          <p className="text-sm font-bold tracking-widest text-orange-700">PERSONAL REVIEW WRITER</p>
           <h1 className="mt-2 text-4xl font-bold">口コミにはたらしさを。</h1>
           <p className="mt-3 opacity-70">今回の食事について入力すると、過去の口コミの文体を参考にタイトルと本文を生成します。</p>
           <Link className="link text-sm" to="/reviews">
