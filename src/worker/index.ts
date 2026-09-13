@@ -4,35 +4,43 @@ import { generateReview } from "./generate";
 import { getReviewSource } from "./review-source";
 import { getReviews } from "./reviews";
 
+// Honoアプリケーションの作成
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
-app.post("/api/generate", (context) => {
-  return generateReview(context.req.raw, context.env);
+// 文書生成API
+app.post("/api/generate", (c) => {
+  return generateReview(c.req.raw, c.env);
 });
 
-app.all("/api/generate", (context) => {
-  context.header("Allow", "POST");
-  return context.json({ error: "POSTで送信してください。" }, 405);
+// POST以外のリクエストは405を返す
+app.all("/api/generate", (c) => {
+  c.header("Allow", "POST");
+  return c.json({ error: "POSTで送信してください。" }, 405);
 });
 
-app.get("/api/health", async (context) => {
-  const styleSamples = await getReviewSource(context.env).getStyleSamples();
+// ヘルスチェックAPI
+app.get("/api/health", async (c) => {
+  const styleSamples = await getReviewSource(c.env).getStyleSamples();
 
-  return context.json({ status: "ok", writingSamples: styleSamples.length });
+  return c.json({ status: "ok", writingSamples: styleSamples.length });
 });
 
-app.get("/api/reviews", (context) => {
-  return getReviews(context.env);
+// 口コミ取得API
+app.get("/api/reviews", (c) => {
+  return getReviews(c.env);
 });
 
-app.all("/api/*", (context) => context.json({ error: "APIが見つかりません。" }, 404));
-app.all("*", (context) => context.env.ASSETS.fetch(context.req.raw));
+// 404ハンドリング
+app.all("/api/*", (c) => c.json({ error: "APIが見つかりません。" }, 404));
+app.all("*", (c) => c.env.ASSETS.fetch(c.req.raw));
 
-app.onError((error, context) => {
+// エラーハンドリング
+app.onError((error, c) => {
   console.error("Request failed", error);
-  return context.json({ error: "生成に失敗しました。時間をおいて再度お試しください。" }, 500);
+  return c.json({ error: "生成に失敗しました。時間をおいて再度お試しください。" }, 500);
 });
 
+// 定期実行のハンドラ
 export default {
   fetch: app.fetch,
   async scheduled(_controller, env) {
