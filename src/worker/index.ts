@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { createRefreshReviews } from "./create-refresh-reviews";
-import { getReviews } from "./reviews";
+import { D1ReviewRepository } from "../infrastructure/d1-review-repository";
+import { createReviewRefresh } from "./review-refresh-factory";
 
 // Honoアプリケーションの作成
 const app = new Hono<{ Bindings: CloudflareBindings }>();
@@ -12,8 +12,8 @@ app.get("/api/health", (c) => {
 });
 
 // 口コミ取得API
-app.get("/api/reviews", (c) => {
-  return getReviews(c.env);
+app.get("/api/reviews", async (c) => {
+  return c.json(await new D1ReviewRepository(c.env.DB).getAll());
 });
 
 // 404ハンドリング
@@ -32,7 +32,7 @@ export default {
   fetch: app.fetch,
   async scheduled(_controller, env) {
     console.log("口コミの定期更新を開始します");
-    const result = await createRefreshReviews(env).execute();
+    const result = await createReviewRefresh(env).execute();
     console.log("口コミの定期更新が完了しました", result);
   },
 } satisfies ExportedHandler<CloudflareBindings>;

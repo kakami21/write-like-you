@@ -1,5 +1,5 @@
-import type { ReviewRepository } from "../scraping/review-repository";
-import type { Review } from "../scraping/review";
+import type { ReviewRepository } from "../reviews/refresh-reviews";
+import type { Review } from "../reviews/review";
 
 type ReviewRow = {
   id: string;

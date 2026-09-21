@@ -4,8 +4,8 @@
 
 - 画面：React、Vite、Tailwind CSS、daisyUI
 - API：TypeScript、Hono、Cloudflare Workers
-- 口コミ収集：Playwright、Cloudflare Browser Run
-- 保存：ローカルJSON、Cloudflare D1
+- 口コミ収集：Cloudflare Browser Run
+- 保存：Cloudflare D1
 
 ## 口コミの取得項目
 
@@ -25,32 +25,19 @@
 
 ## スクレイピング構成
 
-食べログの巡回・抽出処理は、ローカルとCloudflareで共通です。ブラウザーの起動方法と保存先だけをコンストラクタインジェクションで切り替えます。
+食べログの巡回・抽出処理はCloudflare上で実行し、取得結果をD1へ保存します。
 
 ```mermaid
 flowchart LR
-    L["ローカルコマンド"] --> LB["LocalBrowserProvider"]
-    C["手動実行"] --> CB["CloudflareBrowserProvider"]
-    LB --> S["TabelogReviewScraper"]
-    CB --> S
+    C["手動実行"] --> B["CloudflareBrowserProvider"]
+    B --> S["TabelogReviewScraper"]
     S --> R["RefreshReviews"]
-    R --> J["JsonReviewRepository"]
     R --> D["D1ReviewRepository"]
+    D --> V["review_list"]
+    V --> A["口コミ一覧API"]
 ```
 
-| 実行環境 | ブラウザー | 保存先 | 口コミ一覧の参照先 |
-| --- | --- | --- | --- |
-| ローカル | ローカルChrome | `data/reviews.json` | `data/reviews.json` |
-| 本番 | Browser Run | D1 | D1 |
-
-口コミ一覧APIは、`REVIEW_SOURCE`で参照先を切り替えます。
-
-| `REVIEW_SOURCE` | 口コミ一覧の参照先 |
-| --- | --- |
-| `json` | `data/reviews.json`と`data/reviews-meta.json` |
-| `d1` | Cloudflare D1 |
-
-`json`と`d1`以外を指定した場合は、設定ミスとしてエラーになります。
+ローカル開発と本番のどちらでも、口コミ一覧APIはD1の`review_list`ビューを参照します。`wrangler.jsonc`のD1バインディングは`remote`のため、ローカル開発でもリモートD1へ接続します。
 
 ## セットアップ
 
@@ -61,44 +48,20 @@ npm install
 `.dev.vars`を作成し、ローカル実行用の値を設定します。
 
 ```text
-REVIEW_SOURCE="json"
 TABELOG_USERNAME="食べログのユーザー名"
 ```
 
-`TABELOG_USERNAME`には、口コミを取得する食べログユーザーのURL上の名前を設定します。本番では`wrangler.jsonc`の`TABELOG_USERNAME`と`REVIEW_SOURCE="d1"`が使用されます。
+`TABELOG_USERNAME`には、口コミを取得する食べログユーザーのURL上の名前を設定します。本番では`wrangler.jsonc`の値が使用されます。
 
-Browser Runは`wrangler.jsonc`でリモートバインディングとして設定されています。ローカルからBrowser Runを実行した場合もCloudflare側の利用量に加算されます。
-
-## ローカルChromeで口コミを取得
-
-```bash
-npm run scrape
-```
-
-通常のChromeを起動して口コミを取得し、次のファイルへ保存します。
-
-```text
-data/reviews.json
-data/reviews-meta.json
-```
-
-このコマンドはD1や本番環境を更新しません。
+Browser RunとD1は`wrangler.jsonc`でリモートバインディングとして設定されています。ローカルから利用した場合もCloudflare側の利用量に加算されます。
 
 ## アプリのローカル起動
-
-先に口コミJSONを更新します。
-
-```bash
-npm run scrape
-```
-
-続けてアプリを起動します。
 
 ```bash
 npm run dev
 ```
 
-表示されたURLを開きます。口コミ一覧は`data/reviews.json`から読み取るため、ローカルD1は使用しません。
+表示されたURLを開きます。口コミ一覧はリモートD1から読み取ります。
 
 ## ヘルスチェック
 
@@ -144,7 +107,7 @@ curl "http://localhost:8787/cdn-cgi/handler/scheduled"
 初回またはマイグレーション追加時は、Workerより先にリモートD1へ適用します。
 
 ```bash
-npx wrangler d1 migrations apply tabelog-writer-db --remote
+npx wrangler d1 migrations apply dining-archive-db --remote
 npm run build
 npm run deploy
 ```
@@ -158,26 +121,41 @@ npm run deploy
 ├── migrations/
 │   ├── 0001_initial_schema.sql
 │   └── 0002_add_review_list_view.sql
-├── scripts/
-│   └── scrape-tabelog.ts
 ├── src/
-│   ├── local/
-│   │   ├── local-browser-provider.ts
-│   │   └── json-review-repository.ts
-│   ├── scraping/
-│   │   ├── browser-provider.ts
-│   │   ├── review-repository.ts
-│   │   ├── tabelog-review-scraper.ts
-│   │   └── refresh-reviews.ts
+│   ├── reviews/
+│   │   ├── review.ts
+│   │   ├── refresh-reviews.ts
+│   │   └── tabelog-review-scraper.ts
+│   ├── infrastructure/
+│   │   ├── cloudflare-browser-provider.ts
+│   │   └── d1-review-repository.ts
 │   ├── react-app/
 │   └── worker/
-│       ├── cloudflare-browser-provider.ts
-│       ├── d1-review-repository.ts
-│       ├── create-refresh-reviews.ts
+│       ├── review-refresh-factory.ts
 │       └── index.ts
 ├── wrangler.jsonc
 └── package.json
 ```
+
+### ファイルごとの役割
+
+| ファイル | 役割 |
+| --- | --- |
+| `migrations/0001_initial_schema.sql` | `restaurants`と`reviews`のテーブル、制約、インデックスを作成する |
+| `migrations/0002_add_review_list_view.sql` | 口コミ一覧APIが参照する`review_list`ビューを作成する |
+| `src/reviews/review.ts` | アプリ内で共通して扱う口コミデータの型を定義する |
+| `src/reviews/refresh-reviews.ts` | 口コミの取得とD1への全件保存を順番に実行する |
+| `src/reviews/tabelog-review-scraper.ts` | 食べログの一覧・詳細ページを巡回し、口コミデータを抽出・検証する |
+| `src/infrastructure/cloudflare-browser-provider.ts` | Browser Runをスクレイパーから利用できる形に変換する |
+| `src/infrastructure/d1-review-repository.ts` | 口コミをD1へ保存し、`review_list`ビューから一覧を取得する |
+| `src/worker/review-refresh-factory.ts` | Browser Run、スクレイパー、D1を組み合わせて口コミ更新処理を作る |
+| `src/worker/index.ts` | APIルート、エラー処理、Scheduled Handlerを定義するWorkerの入口 |
+| `src/react-app/main.tsx` | Reactアプリを初期化し、ルーターを有効にする |
+| `src/react-app/App.tsx` | `/reviews`へのルーティングを定義する |
+| `src/react-app/pages/ReviewListPage.tsx` | APIから口コミを取得し、訪問年月順または評価順で一覧表示する |
+| `src/react-app/styles.css` | Tailwind CSSとdaisyUIを読み込み、画面全体のスタイルを定義する |
+| `wrangler.jsonc` | Worker、Browser Run、D1、静的ファイル配信の設定を管理する |
+| `package.json` | npmコマンドと利用パッケージを管理する |
 
 ## エラーとして停止する条件
 
