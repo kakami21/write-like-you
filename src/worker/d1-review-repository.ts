@@ -102,15 +102,4 @@ export class D1ReviewRepository implements ReviewRepository {
     };
   }
 
-  async getStyleSamples() {
-    const result = await this.db
-      .prepare(`
-        SELECT title, body
-        FROM scraped_reviews
-        WHERE body IS NOT NULL
-      `)
-      .all<{ title: string | null; body: string }>();
-
-    return result.results;
-  }
 }

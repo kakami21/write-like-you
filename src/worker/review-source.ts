@@ -8,11 +8,6 @@ export function getReviewSource(env: CloudflareBindings) {
       async getAll() {
         return { reviews, lastUpdatedAt: reviewsMeta.lastUpdatedAt };
       },
-      async getStyleSamples() {
-        return reviews.flatMap(({ title, body }) =>
-          body === null ? [] : [{ title, body }],
-        );
-      },
     };
   }
 

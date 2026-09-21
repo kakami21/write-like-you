@@ -18,13 +18,13 @@ app.get("/api/reviews", (c) => {
 
 // 404ハンドリング
 app.all("/api/*", (c) => {
-  return c.json({ error: "APIが見つかりません。" }, 404)
+  return c.json({ error: "APIが見つかりません。" }, 404);
 });
 
 // エラーハンドリング
 app.onError((error, c) => {
   console.error("Request failed", error);
-  return c.json({ error: "生成に失敗しました。時間をおいて再度お試しください。" }, 500);
+  return c.json({ error: "処理に失敗しました。時間をおいて再度お試しください。" }, 500);
 });
 
 // 定期実行のハンドラ

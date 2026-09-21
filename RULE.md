@@ -22,16 +22,12 @@
 
 ```ts
 /**
- * 過去の口コミを参考に、新しい口コミの下書きを生成する。
+ * 保存済みの口コミを取得する。
  *
- * @param request - 店舗情報と感想を含むHTTPリクエスト
- * @param env - Workers AIなどのCloudflareバインディング
- * @returns 生成結果を格納したHTTPレスポンス
+ * @param env - D1などのCloudflareバインディング
+ * @returns 口コミ一覧を格納したHTTPレスポンス
  */
-export async function generateReview(
-  request: Request,
-  env: CloudflareBindings,
-): Promise<Response> {
+export async function getReviews(env: CloudflareBindings): Promise<Response> {
   // ...
 }
 ```
@@ -39,12 +35,12 @@ export async function generateReview(
 ### 型の例
 
 ```ts
-/** 口コミ生成に必要な入力値。 */
-export type GenerateReviewInput = {
-  /** 店舗名。 */
-  restaurantName: string;
-  /** 利用者が入力した料理や接客についての感想。 */
-  impression: string;
+/** 口コミ一覧APIのレスポンス。 */
+export type ReviewsResponse = {
+  /** 取得した口コミ。 */
+  reviews: Review[];
+  /** 最終取得日時。 */
+  lastUpdatedAt: string | null;
 };
 ```
 
@@ -56,35 +52,17 @@ TypeDocはJSDocからHTMLドキュメントを生成するために使う。Type
 
 HTTPメソッド、パス、入力、レスポンス、ステータスコードはOpenAPIに記載する。ルート関数のJSDocだけをAPI仕様書の代わりにしない。
 
-### `/api/generate`の例
+### `/api/reviews`の例
 
 ```yaml
-/api/generate:
-  post:
-    summary: 口コミの下書きを生成する
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - restaurantName
-              - impression
-            properties:
-              restaurantName:
-                type: string
-              impression:
-                type: string
+/api/reviews:
+  get:
+    summary: 口コミ一覧を取得する
     responses:
       "200":
-        description: 生成成功
-      "400":
-        description: 入力内容が不正
-      "405":
-        description: POST以外のメソッドで送信された
+        description: 取得成功
       "500":
-        description: 生成処理に失敗
+        description: 取得処理に失敗
 ```
 
 ### Swagger UIの役割

@@ -1,12 +1,11 @@
 # Tabelog Writer
 
-本人が食べログへ投稿した口コミを収集し、過去の文体を参考に新しい口コミの下書きを生成する個人用アプリです。
+本人が食べログへ投稿した口コミを収集し、一覧で確認する個人用アプリです。
 
 - 画面：React、Vite、Tailwind CSS、daisyUI
 - API：TypeScript、Hono、Cloudflare Workers
 - 口コミ収集：Playwright、Cloudflare Browser Run
 - 保存：ローカルJSON、Cloudflare D1
-- 文章生成：Cloudflare Workers AI
 
 ## 口コミの取得項目
 
@@ -44,9 +43,9 @@ flowchart LR
 | ローカル | ローカルChrome | `data/reviews.json` | `data/reviews.json` |
 | 本番 | Browser Run | D1 | D1 |
 
-口コミ一覧APIと文章生成の参考文は、`REVIEW_SOURCE`で参照先を切り替えます。
+口コミ一覧APIは、`REVIEW_SOURCE`で参照先を切り替えます。
 
-| `REVIEW_SOURCE` | 口コミ一覧・文章生成の参考文の参照先 |
+| `REVIEW_SOURCE` | 口コミ一覧の参照先 |
 | --- | --- |
 | `json` | `data/reviews.json`と`data/reviews-meta.json` |
 | `d1` | Cloudflare D1 |
@@ -59,14 +58,11 @@ flowchart LR
 npm install
 ```
 
-`.dev.vars`を作成し、Workers AIをローカルから利用するための値を設定します。
+`.dev.vars`を作成し、ローカル実行用の値を設定します。
 
 ```text
-AI_TRANSPORT="rest"
 REVIEW_SOURCE="json"
 TABELOG_USERNAME="食べログのユーザー名"
-CLOUDFLARE_ACCOUNT_ID="CloudflareのAccount ID"
-CLOUDFLARE_AI_API_TOKEN="Workers AI API Token"
 ```
 
 `TABELOG_USERNAME`には、口コミを取得する食べログユーザーのURL上の名前を設定します。本番では`wrangler.jsonc`の`TABELOG_USERNAME`と`REVIEW_SOURCE="d1"`が使用されます。
@@ -102,7 +98,7 @@ npm run scrape
 npm run dev
 ```
 
-表示されたURLを開きます。口コミ一覧と文章生成の参考文は`data/reviews.json`から読み取るため、ローカルD1は使用しません。
+表示されたURLを開きます。口コミ一覧は`data/reviews.json`から読み取るため、ローカルD1は使用しません。
 
 ## ヘルスチェック
 
@@ -199,4 +195,4 @@ npm run deploy
 - 食べログ側のHTML構造が変わると、CSSセレクターの修正が必要です。
 - Browser RunからのアクセスはBotとして識別されます。対象サイトの判断により取得できなくなる可能性があります。
 - 実行頻度、取得データの範囲、利用方法について対象サイトの利用条件を確認してください。
-- Browser RunとWorkers AIの利用量はCloudflareダッシュボードで確認してください。
+- Browser Runの利用量はCloudflareダッシュボードで確認してください。
