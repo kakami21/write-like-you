@@ -30,8 +30,9 @@ app.get("/api/reviews", (c) => {
 });
 
 // 404ハンドリング
-app.all("/api/*", (c) => c.json({ error: "APIが見つかりません。" }, 404));
-app.all("*", (c) => c.env.ASSETS.fetch(c.req.raw));
+app.all("/api/*", (c) => {
+  return c.json({ error: "APIが見つかりません。" }, 404)
+});
 
 // エラーハンドリング
 app.onError((error, c) => {
