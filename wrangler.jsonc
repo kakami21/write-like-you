@@ -31,7 +31,12 @@
       "migrations_dir": "./migrations"
     }
   ],
-
+  "routes": [
+    {
+      "pattern": "pakoirileo.nokishita.app",
+      "custom_domain": true
+    }
+  ],
   "observability": {
     "enabled": true
   }
