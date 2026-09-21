@@ -11,11 +11,8 @@
   },
 
   "vars": {
-    "AI_TRANSPORT": "binding",
     "REVIEW_SOURCE": "d1",
-    "TABELOG_USERNAME": "pakoirileo",
-    "CLOUDFLARE_ACCOUNT_ID": "52ae66e464b0ab9acb6cb0ff72768ff8",
-    "CLOUDFLARE_AI_API_TOKEN": ""
+    "TABELOG_USERNAME": "pakoirileo"
   },
 
   "assets": {
@@ -33,11 +30,6 @@
       "migrations_dir": "./migrations"
     }
   ],
-
-  "ai": {
-    "binding": "AI",
-    "remote": true
-  },
 
   "observability": {
     "enabled": true

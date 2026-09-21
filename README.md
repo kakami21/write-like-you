@@ -104,6 +104,20 @@ npm run dev
 
 表示されたURLを開きます。口コミ一覧と文章生成の参考文は`data/reviews.json`から読み取るため、ローカルD1は使用しません。
 
+## ヘルスチェック
+
+Workerがリクエストを処理できることは、次のAPIで確認できます。
+
+```bash
+curl -i "http://localhost:5173/api/health"
+```
+
+正常時はHTTP 200と次のJSONを返します。D1などの外部依存サービスは確認しません。
+
+```json
+{"status":"ok"}
+```
+
 ## 本番D1の手動更新
 
 本番D1を更新する場合は、Wranglerの開発サーバーを使用して手動で実行します。

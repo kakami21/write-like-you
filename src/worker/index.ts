@@ -1,27 +1,14 @@
 import { Hono } from "hono";
 import { createRefreshReviews } from "./create-refresh-reviews";
-import { generateReview } from "./generate";
-import { getReviewSource } from "./review-source";
 import { getReviews } from "./reviews";
 
 // Honoアプリケーションの作成
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
-// 文書生成API
-app.post("/api/generate", (c) => {
-  return generateReview(c.req.raw, c.env);
-});
-
-// POST以外のリクエストは405を返す
-app.all("/api/generate", (c) => {
-  c.header("Allow", "POST");
-  return c.json({ error: "POSTで送信してください。" }, 405);
-});
-
 // ヘルスチェックAPI
-app.get("/api/health", async (c) => {
-  const styleSamples = await getReviewSource(c.env).getStyleSamples();
-  return c.json({ status: "ok", writingSamples: styleSamples.length });
+app.get("/api/health", (c) => {
+  c.header("Cache-Control", "no-store");
+  return c.json({ status: "ok" });
 });
 
 // 口コミ取得API

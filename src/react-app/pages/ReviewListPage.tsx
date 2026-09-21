@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 
 type SortType = "reviewDate" | "rating";
 
@@ -66,7 +65,7 @@ export function ReviewListPage() {
   return (
     <main className="brutal min-h-screen bg-amber-50 px-4 py-10">
       <div className="mx-auto max-w-3xl">
-        <header className="mb-2 flex items-start justify-between gap-4">
+        <header className="mb-2">
           <div>
             <h1 className="text-4xl font-bold">口コミ一覧</h1>
             <p className="mt-2 opacity-70">{sortedReviews.length}件の口コミ</p>
@@ -81,9 +80,6 @@ export function ReviewListPage() {
             </p>
           </div>
 
-          <Link className="btn btn-primary" to="/reviews/new">
-            口コミを作成
-          </Link>
         </header>
 
         <div className="mb-4 flex items-center justify-end gap-4">
