@@ -4,7 +4,6 @@ import { ReviewListPage } from "./pages/ReviewListPage";
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/reviews" replace />} />
       <Route path="/reviews" element={<ReviewListPage />} />
       <Route path="*" element={<Navigate to="/reviews" replace />} />
     </Routes>
