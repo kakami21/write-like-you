@@ -1,48 +1,27 @@
--- Migration number: 0001 	 2026-07-18T05:09:12.582Z
-CREATE TABLE writing_samples (
+-- Migration number: 0001  2026-09-21T00:00:00.000Z
+CREATE TABLE restaurants (
+  url TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE reviews (
   id TEXT PRIMARY KEY NOT NULL,
-  platform TEXT NOT NULL,
-  source_type TEXT NOT NULL
-    CHECK (source_type IN ('imported', 'approved')),
-  source_url TEXT,
-  subject_name TEXT,
+  restaurant_url TEXT NOT NULL
+    REFERENCES restaurants (url),
+  detail_url TEXT NOT NULL UNIQUE,
   title TEXT,
-  content TEXT NOT NULL,
-  rating REAL
-    CHECK (rating IS NULL OR rating BETWEEN 0 AND 5),
-  metadata_json TEXT
-    CHECK (metadata_json IS NULL OR json_valid(metadata_json)),
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  body TEXT,
+  review_date TEXT NOT NULL
+    CHECK (review_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]'),
+  rating REAL NOT NULL
+    CHECK (rating BETWEEN 0 AND 5),
+  like_count INTEGER NOT NULL
+    CHECK (like_count >= 0),
+  scraped_at TEXT NOT NULL
 );
 
-CREATE INDEX idx_writing_samples_platform
-  ON writing_samples (platform);
+CREATE INDEX idx_reviews_restaurant_url
+  ON reviews (restaurant_url);
 
-CREATE TABLE style_profiles (
-  platform TEXT PRIMARY KEY NOT NULL,
-  profile TEXT NOT NULL,
-  sample_count INTEGER NOT NULL
-    CHECK (sample_count >= 0),
-  updated_at TEXT NOT NULL
-);
-
-CREATE TABLE drafts (
-  id TEXT PRIMARY KEY NOT NULL,
-  platform TEXT NOT NULL,
-  input_json TEXT NOT NULL
-    CHECK (json_valid(input_json)),
-  generated_title TEXT,
-  generated_body TEXT NOT NULL,
-  final_title TEXT,
-  final_body TEXT,
-  status TEXT NOT NULL
-    CHECK (
-      status IN ('generated', 'blocked', 'approved', 'rejected')
-    ),
-  model TEXT NOT NULL,
-  check_result_json TEXT NOT NULL
-    CHECK (json_valid(check_result_json)),
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
+CREATE INDEX idx_reviews_review_date
+  ON reviews (review_date DESC);

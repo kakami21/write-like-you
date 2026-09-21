@@ -17,10 +17,13 @@ export class D1ReviewRepository implements ReviewRepository {
   constructor(private readonly db: D1Database) {}
 
   async replaceAll(reviews: Review[], scrapedAt: string) {
-    const insert = this.db.prepare(`
-      INSERT INTO scraped_reviews (
+    const insertRestaurant = this.db.prepare(`
+      INSERT INTO restaurants (url, name)
+      VALUES (?1, ?2)
+    `);
+    const insertReview = this.db.prepare(`
+      INSERT INTO reviews (
         id,
-        restaurant_name,
         restaurant_url,
         detail_url,
         title,
@@ -29,15 +32,21 @@ export class D1ReviewRepository implements ReviewRepository {
         rating,
         like_count,
         scraped_at
-      ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+      ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
     `);
+    const restaurants = new Map(
+      reviews.map((review) => [review.url, review.name]),
+    );
 
     await this.db.batch([
-      this.db.prepare("DELETE FROM scraped_reviews"),
+      this.db.prepare("DELETE FROM reviews"),
+      this.db.prepare("DELETE FROM restaurants"),
+      ...restaurants.entries().map(([url, name]) =>
+        insertRestaurant.bind(url, name),
+      ),
       ...reviews.map((review) =>
-        insert.bind(
+        insertReview.bind(
           review.id,
-          review.name,
           review.url,
           review.detailUrl,
           review.title,
@@ -48,14 +57,6 @@ export class D1ReviewRepository implements ReviewRepository {
           scrapedAt,
         ),
       ),
-      this.db
-        .prepare(`
-          INSERT INTO review_scrape_metadata (id, last_updated_at)
-          VALUES (1, ?1)
-          ON CONFLICT (id) DO UPDATE
-          SET last_updated_at = excluded.last_updated_at
-        `)
-        .bind(scrapedAt),
     ]);
   }
 
@@ -64,26 +65,27 @@ export class D1ReviewRepository implements ReviewRepository {
       this.db
         .prepare(`
           SELECT
-            id,
-            restaurant_name,
-            restaurant_url,
-            detail_url,
-            title,
-            body,
-            review_date,
-            rating,
-            like_count
-          FROM scraped_reviews
-          ORDER BY review_date DESC
+            reviews.id,
+            restaurants.name AS restaurant_name,
+            restaurants.url AS restaurant_url,
+            reviews.detail_url,
+            reviews.title,
+            reviews.body,
+            reviews.review_date,
+            reviews.rating,
+            reviews.like_count
+          FROM reviews
+          INNER JOIN restaurants
+            ON restaurants.url = reviews.restaurant_url
+          ORDER BY reviews.review_date DESC
         `)
         .all<ReviewRow>(),
       this.db
         .prepare(`
-          SELECT last_updated_at
-          FROM review_scrape_metadata
-          WHERE id = 1
+          SELECT MAX(scraped_at) AS last_updated_at
+          FROM reviews
         `)
-        .first<{ last_updated_at: string }>(),
+        .first<{ last_updated_at: string | null }>(),
     ]);
 
     return {
