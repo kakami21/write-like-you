@@ -156,7 +156,8 @@ npm run deploy
 ```text
 .
 ├── migrations/
-│   └── 0001_initial_schema.sql
+│   ├── 0001_initial_schema.sql
+│   └── 0002_add_review_list_view.sql
 ├── scripts/
 │   └── scrape-tabelog.ts
 ├── src/

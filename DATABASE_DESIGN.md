@@ -9,12 +9,13 @@
 | SQL互換性 | SQLite |
 | 正本 | `migrations/`配下のSQL |
 
-## 2. 現在使用するテーブル
+## 2. 現在使用するテーブルとビュー
 
-| テーブル | 役割 | 主キー |
-| --- | --- | --- |
-| `restaurants` | 店舗名と店舗URLを保存する | `url` |
-| `reviews` | 食べログから取得した口コミを保存する | `id` |
+| オブジェクト | 種別 | 役割 | 主キー |
+| --- | --- | --- | --- |
+| `restaurants` | テーブル | 店舗名と店舗URLを保存する | `url` |
+| `reviews` | テーブル | 食べログから取得した口コミを保存する | `id` |
+| `review_list` | ビュー | 口コミ一覧API向けの読み取り形式を提供する | なし |
 
 ### 2.1 `restaurants`
 
@@ -37,9 +38,26 @@
 | `like_count` | INTEGER | 不可 | 0以上 | いいね数 |
 | `scraped_at` | TEXT | 不可 | なし | 取得日時 |
 
+### 2.3 `review_list`
+
+`reviews`と`restaurants`を結合し、口コミ一覧APIが必要とする項目を提供する。データは保持せず、一覧取得と最終取得日時の算出に使用する。書き込みは行わない。
+
+| カラム | 参照元 |
+| --- | --- |
+| `id` | `reviews.id` |
+| `restaurant_name` | `restaurants.name` |
+| `restaurant_url` | `restaurants.url` |
+| `detail_url` | `reviews.detail_url` |
+| `title` | `reviews.title` |
+| `body` | `reviews.body` |
+| `review_date` | `reviews.review_date` |
+| `rating` | `reviews.rating` |
+| `like_count` | `reviews.like_count` |
+| `scraped_at` | `reviews.scraped_at` |
+
 ## 3. 更新方法
 
-`reviews`と`restaurants`は、D1のバッチ処理でまとめて全件入れ替える。途中のSQLが失敗した場合は全体をロールバックし、更新前の口コミを維持する。最終取得日時は`reviews.scraped_at`の最大値から取得する。
+`reviews`と`restaurants`は、D1のバッチ処理でまとめて全件入れ替える。途中のSQLが失敗した場合は全体をロールバックし、更新前の口コミを維持する。口コミ一覧と最終取得日時は`review_list`から取得する。
 
 ```mermaid
 flowchart LR
@@ -47,8 +65,9 @@ flowchart LR
     B --> S["共通スクレイパー"]
     S --> T["restaurants"]
     S --> R["reviews"]
-    T --> A["口コミ一覧API"]
-    R --> A
+    T --> V["review_list"]
+    R --> V
+    V --> A["口コミ一覧API"]
 ```
 
 ## 4. マイグレーション運用

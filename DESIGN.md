@@ -42,7 +42,8 @@ flowchart LR
     S --> J["ローカルJSON"]
     S --> D["Cloudflare D1"]
     J --> A["口コミ一覧API"]
-    D --> A
+    D --> V["review_list"]
+    V --> A
     A --> U["口コミ一覧画面"]
 ```
 
@@ -59,7 +60,7 @@ flowchart LR
 | Worker | APIと定期実行ハンドラーを提供する |
 | Static Assets | React画面を配信する |
 | Browser Run | 食べログを巡回する |
-| D1 | 口コミと最終取得日時を保存する |
+| D1 | 口コミを正規化して保存し、`review_list`ビューで一覧API向けの読み取り形式を提供する |
 
 ## 5. データ
 
@@ -90,7 +91,8 @@ flowchart LR
 2. 食べログの一覧ページと詳細ページを巡回する。
 3. 取得結果を検証する。
 4. ローカルではJSON、本番ではD1へ保存する。
-5. D1では口コミと最終取得日時をバッチで更新する。
+5. D1では`restaurants`と`reviews`をバッチで全件入れ替える。
+6. 本番の口コミ一覧APIは`review_list`ビューから読み取る。
 
 途中で失敗した場合は保存処理を完了せず、既存データを維持する。
 
