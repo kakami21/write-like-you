@@ -5,8 +5,6 @@ import { createReviewRefresh } from "./review-refresh-factory";
 // Honoアプリケーションの作成
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
-app.get('/', (c) => c.text('Hello Hono!'))
-
 // ヘルスチェックAPI
 app.get("/api/health", (c) => {
   c.header("Cache-Control", "no-store");
