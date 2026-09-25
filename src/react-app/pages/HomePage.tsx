@@ -5,6 +5,8 @@ export default function HomePage() {
         <header className="mb-2">
           <h1 className="text-4xl font-bold">箱入レオのルーザー日記</h1>
         </header>
+
+        <h1>Welcome to the Box-in Leo's Diary</h1>
       </div>
     </main>
   );
